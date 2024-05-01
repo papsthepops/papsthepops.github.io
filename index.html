@@ -1,5 +1,128 @@
-<html>
-  <body>
-    <h1>Hello, PSG!</h1>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    grayscale: {
+                        30: '30%',
+                        70: '70%',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body oncontextmenu="return false">
+    <div id="app" class="flex h-full w-full items-center justify-center">
+        <div class="relative wrapper bg-red-100 h-full w-full" :class="{ 'grayscale-0 bg-pink-300': responseSubmitted && isHappy, 'grayscale-[70%] bg-gray-300': responseSubmitted && !isHappy }">
+            <div class="content relative z-50">
+                <div class="wing right"></div>
+                <div class="wing left"></div>
+
+                <div id="envelope" class="closed" :class="{'closed': !isOpen, 'open': isOpen}">
+                    <div class="top"></div>
+                    <div class="sides"></div>
+                    <div class="letter text-xs">
+                        <h2 class="font-semibold">To: Valerieee</h2>
+                        <hr class="my-3 border-red-200">
+                        <div>
+                            <p>
+                                Aku buat ini untuk kamu, ga tau juga sih tujuannya apa😭 aku cuma mau bilang, semangat ya disana, jangan stress wkkwkwk
+                            </p>
+                            <hr class="my-3 border-red-200">
+                            <span v-if="!responseSubmitted">Happy ?</span> 
+                            <button v-if="!responseSubmitted" @click="sendHappiness(true)" class="hover:underline ms-1 bg-green-200 py-1 px-2 rounded">Yes</button>
+                            <span v-if="!responseSubmitted" class="mx-1">:</span>
+                            <button v-if="!responseSubmitted" @click="sendHappiness(false)" class="hover:underline bg-red-200 py-1 px-2 rounded">No</button>
+                            <span v-if="responseSubmitted">{{ selectedEmoji }}</span>
+                        </div>
+                    </div>
+                    <div class="heart relative cursor-pointer grayscale-[30%]" :class="{ 'grayscale-0': responseSubmitted && isHappy, 'grayscale-[70%]': responseSubmitted && !isHappy }" @click="toggleEnvelope">
+                        <div class="absolute z-50 text-white font-semibold text-xs left-6 top-6">Click me!</div>
+                    </div>  
+                </div>
+            </div>
+
+            <div v-if="responseSubmitted && !isHappy" class="absolute w-full h-full top-0 grid gap-y z-10 opacity-50 grayscale-[70%]">
+                <marquee behavior="scroll" direction="right" scrolldelay="130" class="text-5xl">😞</marquee>
+                <marquee behavior="scroll" direction="left" scrolldelay="60" class="text-3xl">😭</marquee>
+                <marquee behavior="scroll" direction="right" scrolldelay="70" class="text-2xl">😞</marquee>
+                <marquee behavior="scroll" direction="left" scrolldelay="110" class="text-5xl">😩</marquee>
+                <marquee behavior="scroll" direction="right" scrolldelay="120" class="text-7xl">😭</marquee>
+                <marquee behavior="scroll" direction="left" scrolldelay="90" class="text-4xl">😭</marquee>
+                <marquee behavior="scroll" direction="right" scrolldelay="80" class="text-3xl">😞</marquee>
+                <marquee behavior="scroll" direction="left" scrolldelay="100" class="text-6xl">😫</marquee>
+            </div>
+            <div v-if="responseSubmitted && isHappy" class="absolute w-full h-full top-0 grid gap-y z-10 opacity-50">
+                <marquee behavior="scroll" direction="right" scrolldelay="130" class="text-5xl">😄</marquee>
+                <marquee behavior="scroll" direction="left" scrolldelay="60" class="text-3xl">🥹</marquee>
+                <marquee behavior="scroll" direction="right" scrolldelay="70" class="text-2xl">🤗</marquee>
+                <marquee behavior="scroll" direction="left" scrolldelay="110" class="text-5xl">😊</marquee>
+                <marquee behavior="scroll" direction="right" scrolldelay="120" class="text-7xl">🥰</marquee>
+                <marquee behavior="scroll" direction="left" scrolldelay="90" class="text-4xl">😄</marquee>
+                <marquee behavior="scroll" direction="right" scrolldelay="80" class="text-3xl">🥰</marquee>
+                <marquee behavior="scroll" direction="left" scrolldelay="100" class="text-6xl">🤗</marquee>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    isOpen: false,
+                    responseSubmitted: localStorage.getItem('responseSubmitted') === 'true',
+                    selectedEmoji: localStorage.getItem('selectedEmoji') || '',
+                    isHappy: false
+                };
+            },
+            created() {
+                this.responseSubmitted = localStorage.getItem('responseSubmitted') === 'true';
+                this.isHappy = localStorage.getItem('isHappy') === 'true';
+            },
+            methods: {
+                toggleEnvelope() {
+                    this.isOpen = !this.isOpen;
+                },
+                sendHappiness(isHappy) {
+                    const happinessValue = isHappy ? 1 : 0;
+                    this.selectedEmoji = isHappy ? 'Thank you 🥹😊🤗🥰🥰😄' : 'Okay 😞😩😫😭😭😭';
+                    this.isHappy = isHappy;
+                    fetch('https://660948a00f324a9a28830f00.mockapi.io/happy', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ happy: happinessValue })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Success:', data);
+                        this.responseSubmitted = true;
+                        localStorage.setItem('responseSubmitted', 'true');
+                        localStorage.setItem('selectedEmoji', this.selectedEmoji);
+                        localStorage.setItem('isHappy', this.isHappy.toString());
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+                }
+            },
+            compilerOptions: {
+                isCustomElement: (tag) => tag === 'marquee'
+            }
+        }).mount('#app');
+    </script>
+</body>
 </html>
