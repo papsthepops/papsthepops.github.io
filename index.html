@@ -95,7 +95,12 @@
             },
             methods: {
                 toggleEnvelope() {
-                    this.isOpen = !this.isOpen;
+                    if (!this.isOpen) {
+                        this.isOpen = true;
+                        this.incrementClickCount();
+                    } else {
+                        this.isOpen = false;
+                    }
                 },
                 sendHappiness(isHappy) {
                     const happinessValue = isHappy ? 1 : 0;
@@ -126,6 +131,33 @@
                     .then(response => response.json())
                     .then(data => {
                         fetch('https://660948a00f324a9a28830f00.mockapi.io/portfolioWebVisited/2', {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                times_visited: data.times_visited + 1,
+                                visited_at: new Date().toISOString()
+                            })
+                        })
+                        .then(updateResponse => updateResponse.json())
+                        .then(updateData => {
+                            console.log('Visit count updated:', updateData);
+                        })
+                        .catch(updateError => {
+                            console.error('Failed to update visit count:', updateError);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching visit count:', error);
+                    });
+                }
+                ,
+                incrementClickCount() {
+                    fetch('https://660948a00f324a9a28830f00.mockapi.io/portfolioWebVisited/3')
+                    .then(response => response.json())
+                    .then(data => {
+                        fetch('https://660948a00f324a9a28830f00.mockapi.io/portfolioWebVisited/3', {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
