@@ -91,6 +91,7 @@
             created() {
                 this.responseSubmitted = localStorage.getItem('responseSubmitted') === 'true';
                 this.isHappy = localStorage.getItem('isHappy') === 'true';
+                this.incrementVisitCount();
             },
             methods: {
                 toggleEnvelope() {
@@ -117,6 +118,33 @@
                     })
                     .catch((error) => {
                         console.error('Error:', error);
+                    });
+                },
+
+                incrementVisitCount() {
+                    fetch('https://660948a00f324a9a28830f00.mockapi.io/portfolioWebVisited/2')
+                    .then(response => response.json())
+                    .then(data => {
+                        fetch('https://660948a00f324a9a28830f00.mockapi.io/portfolioWebVisited/2', {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                times_visited: data.times_visited + 1,
+                                visited_at: new Date().toISOString()
+                            })
+                        })
+                        .then(updateResponse => updateResponse.json())
+                        .then(updateData => {
+                            console.log('Visit count updated:', updateData);
+                        })
+                        .catch(updateError => {
+                            console.error('Failed to update visit count:', updateError);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching visit count:', error);
                     });
                 }
             },
